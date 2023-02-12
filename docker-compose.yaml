@@ -1,0 +1,60 @@
+version: '3.4'
+
+volumes:
+    minio-data:
+    postgres-data:
+    redis-data:
+    tmp-data:
+
+services:
+    nginx:
+        image: ghcr.io/medleybox/nginx:master
+        restart: always
+        depends_on:
+            - "webapp"
+            - "vault"
+        ports:
+            - "443:443"
+    webapp:
+        image: ghcr.io/medleybox/webapp:master
+        env_file: .env
+        restart: always
+    vault:
+        image: ghcr.io/medleybox/vault:master
+        env_file: .env
+        restart: always
+        volumes:
+            - tmp-data:/var/www/var/tmp
+    messenger:
+        image: ghcr.io/medleybox/messenger:master
+        env_file: .env
+        restart: always
+        volumes:
+            - tmp-data:/var/www/var/tmp
+        depends_on:
+            - vault
+    websocket:
+        image: ghcr.io/medleybox/websocket:master
+        restart: always
+        depends_on:
+            - vault
+    minio:
+        image: minio/minio
+        env_file: .env
+        restart: always
+        hostname: minio
+        volumes:
+            - minio-data:/data
+        entrypoint: [""]
+        command: ["sh", "-c", "mkdir -p /data/medley && /usr/bin/docker-entrypoint.sh minio server /data --console-address ':9001'"]
+    redis:
+        image: redis:alpine
+        restart: always
+        volumes:
+            - redis-data:/data
+    db:
+        image: postgres:15-alpine3.17
+        env_file: .env
+        restart: always
+        volumes:
+            - postgres-data:/var/lib/postgresql/data

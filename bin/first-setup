@@ -1,0 +1,9 @@
+#!/bin/bash
+
+docker compose -p 'medleybox_prod' exec vault bin/console doctrine:database:drop --if-exists --force
+docker compose -p 'medleybox_prod' exec webapp bin/console doctrine:database:drop --if-exists --force
+docker compose -p 'medleybox_prod' exec vault bin/console doctrine:database:create
+docker compose -p 'medleybox_prod' exec webapp bin/console doctrine:database:create
+docker compose -p 'medleybox_prod' exec vault bin/console doctrine:schema:update --force --complete --dump-sql
+docker compose -p 'medleybox_prod' exec webapp bin/console doctrine:schema:update --force --complete --dump-sql
+docker compose -p 'medleybox_prod' exec webapp bin/console app:create-user
