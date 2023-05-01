@@ -3,6 +3,7 @@ version: '3.4'
 volumes:
     minio-data:
     postgres-data:
+    meilisearch-data:
     redis-data:
     tmp-data:
 
@@ -58,3 +59,8 @@ services:
         restart: always
         volumes:
             - postgres-data:/var/lib/postgresql/data
+    meilisearch:
+        image: getmeili/meilisearch:nightly
+        env_file: .env
+        volumes:
+            - meilisearch-data:/meili_data
